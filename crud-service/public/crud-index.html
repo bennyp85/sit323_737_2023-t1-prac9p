@@ -1,0 +1,182 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Calculator App</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+
+<body>
+  <div class="container">
+    <h1>Calculator App</h1>
+
+    <div class="form-group">
+      <label for="num1">Number 1:</label>
+      <input type="number" id="num1">
+    </div>
+    <div class="form-group">
+      <label for="num2">Number 2:</label>
+      <input type="number" id="num2">
+    </div>
+    <div class="form-group">
+      <label for="operation">Operation:</label>
+      <input type="text" id="operation">
+    </div>
+    <div class="form-group">
+      <label for="databaseId">Database ID:</label>
+      <input type="text" id="databaseId">
+    </div>
+    <button id="historyButton">Read</button>
+    <button onclick="dbUpdate()">Update</button>
+    <button onclick="dbDelete()">Delete</button>
+    <div class="result" id="result"></div>
+  </div>
+<script>
+  async function dbHistory() {
+    const urlParams = new URLSearchParams(window.location.search);
+    const jwtToken = urlParams.get('token');
+    
+    try {
+      const response = await fetch(`http://localhost:8003/read?token=${jwtToken}`, {
+        method: 'GET',
+        headers: {
+          'Authorization': `Bearer ${jwtToken}`,
+        },
+      });
+
+      if (response.ok) {
+        const data = await response.json();
+        console.log(data);
+        const num1Element = document.getElementById('num1');
+        const num2Element = document.getElementById('num2');
+        const operationElement = document.getElementById('operation');
+        const resultElement = document.getElementById('result');
+        const databaseIdElement = document.getElementById('databaseId');
+        
+        if (data.length > 0) {
+          const { num1, num2, operationName, result, _id} = data[0];
+          num1Element.value = num1;
+          num2Element.value = num2;
+          operationElement.value = operationName;
+          resultElement.innerHTML = `Result: ${result}`;
+          databaseIdElement.value = _id;
+        } else {
+          // Clear the input fields if no data is available
+          num1Element.value = '';
+          num2Element.value = '';
+          operationElement.value = '';
+          resultElement.innerHTML = '';
+          databaseIdElement.value = '';
+        }
+      } else {
+        alert('Error in retrieving calculation history');
+      }
+    } catch (error) {
+      console.error('Error:', error);
+    }
+  }
+
+  const historyButton = document.getElementById('historyButton');
+  historyButton.addEventListener('click', dbHistory);
+
+  async function dbDelete() {
+      const urlParams = new URLSearchParams(window.location.search);
+      const jwtToken = urlParams.get('token');
+      const databaseId = document.getElementById('databaseId').value;
+      const num1Element = document.getElementById('num1');
+      const num2Element = document.getElementById('num2');
+      const operationElement = document.getElementById('operation');
+      const resultElement = document.getElementById('result');
+      const databaseIdElement = document.getElementById('databaseId');
+
+      try {
+        const response = await fetch(`http://localhost:8003/delete/${databaseId}?token=${jwtToken}`, {
+          method: 'DELETE',
+          headers: {
+            'Authorization': `Bearer ${jwtToken}`,
+          },
+        });
+
+      if (response.ok) {
+        const data = await response.json();
+        num1Element.value = '';
+        num2Element.value = '';
+        operationElement.value = '';
+        resultElement.innerHTML = '';
+        databaseIdElement.value = '';
+        alert(data.message); // Show success message
+      } else {
+        alert('Error in deleting calculation');
+      }
+    } catch (error) {
+      console.error('Error:', error);
+    }
+  }
+
+  async function dbUpdate() {
+  const urlParams = new URLSearchParams(window.location.search);
+  const jwtToken = urlParams.get('token');
+  const databaseId = document.getElementById('databaseId').value;
+  const num1 = document.getElementById('num1').value;
+  const num2 = document.getElementById('num2').value;
+  const operation = document.getElementById('operation').value;
+
+  // Perform the operation
+  let result;
+  switch (operation) {
+    case 'add':
+      result = parseFloat(num1) + parseFloat(num2);
+      break;
+    case 'subtract':
+      result = parseFloat(num1) - parseFloat(num2);
+      break;
+    case 'multiply':
+      result = parseFloat(num1) * parseFloat(num2);
+      break;
+    case 'divide':
+      result = parseFloat(num1) / parseFloat(num2);
+      break;
+    default:
+      result = NaN;
+  }
+
+  if (isNaN(result)) {
+    alert('Invalid operation');
+    return;
+  }
+
+  // Update the result on the page
+  const resultElement = document.getElementById('result');
+  resultElement.innerHTML = `Result: ${result}`;
+
+  try {
+    const response = await fetch(`http://localhost:8003/update/${databaseId}?token=${jwtToken}`, {
+      method: 'PUT',
+      headers: {
+        'Authorization': `Bearer ${jwtToken}`,
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        num1: num1,
+        num2: num2,
+        operationName: operation,
+        result: result,
+      }),
+    });
+
+    if (response.ok) {
+      const data = await response.json();
+      alert(data.message); // Show success message
+    } else {
+      alert('Error in updating calculation');
+    }
+  } catch (error) {
+    console.error('Error:', error);
+  }
+}
+</script>
+</body>
+
+</html>

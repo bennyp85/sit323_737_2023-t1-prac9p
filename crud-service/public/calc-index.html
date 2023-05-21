@@ -1,0 +1,69 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Calculator App</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+
+<body>
+  <div class="container">
+    <h1>Calculator App</h1>
+
+    <div class="form-group">
+      <label for="num1">Number 1:</label>
+      <input type="number" id="num1">
+    </div>
+    <div class="form-group">
+      <label for="num2">Number 2:</label>
+      <input type="number" id="num2">
+    </div>
+    <button onclick="calculate('add')">Add</button>
+    <button onclick="calculate('subtract')">Subtract</button>
+    <button onclick="calculate('multiply')">Multiply</button>
+    <button onclick="calculate('divide')">Divide</button>
+    <button onclick="getHistory()">History</button>
+    <div class="result" id="result"></div>
+    
+
+    <script>
+      async function calculate(operation) {
+        const num1 = document.getElementById('num1').value;
+        const num2 = document.getElementById('num2').value;
+        const operationName = operation;
+        const urlParams = new URLSearchParams(window.location.search);
+        const jwtToken = urlParams.get('token');
+        
+        try {
+          const response = await fetch(`http://localhost:8003/${operation}?num1=${num1}&num2=${num2}&operationName=${operationName}&token=${jwtToken}`, {
+            method: 'GET',
+            headers: {
+              'Authorization': `Bearer ${jwtToken}`,
+            },
+          });
+
+          if (response.ok) {
+            const data = await response.json();
+            document.getElementById('result').innerHTML = `Result: ${data.result}`;
+          } else {
+            alert('Error in calculation');
+          }
+        } catch (error) {
+          console.error('Error:', error);
+        }
+      }
+
+    async function getHistory() {
+      const urlParams = new URLSearchParams(window.location.search);
+      const jwtToken = urlParams.get('token');
+
+      // Redirect to crud-index.html with the token as a query parameter
+      window.location.href = `crud-index.html?token=${jwtToken}`;
+    }
+    </script>
+  </div>
+</body>
+
+</html>

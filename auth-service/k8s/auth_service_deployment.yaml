@@ -1,0 +1,22 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  labels:
+    app: auth
+  name: auth
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: auth-pod
+  template:
+    metadata:
+      labels:
+        app: auth-pod
+    spec:
+      containers:
+        - name: auth
+          image: bpritch/auth-app:latest
+          ports:
+            - containerPort: 8001
+      restartPolicy: Always

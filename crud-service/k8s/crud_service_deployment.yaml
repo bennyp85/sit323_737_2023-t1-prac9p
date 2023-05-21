@@ -1,0 +1,28 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  labels:
+    app: crud
+  name: crud
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: crud-pod
+  template:
+    metadata:
+      labels:
+        app: crud-pod
+    spec:
+      containers:
+      - name: crud
+        env:
+        - name: MONGO_URL
+          value: mongodb://mongodb-service:27017/crud
+        resources: {}
+        image: bpritch/crud-app:latest
+        ports:
+        - containerPort: 8003
+      restartPolicy: Always
+      
+      
